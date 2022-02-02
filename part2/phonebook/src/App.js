@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
-
 import PersonForm from './components/PersonForm'
 import Filter from './components/Filter'
-import Persons from './components/Persons'
-
+import ContactList from './components/ContactList'
+import contactService from './services/contacts'
 
 const App = () => {
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
+    contactService
+      .getAll()
       .then(response => {
-        setPersons(response.data)
+        setPersons(response)
+        setNewName('')
+        setNewPhone('')
       })
   }, [])
 
@@ -23,32 +23,42 @@ const App = () => {
 
   const addPerson = (event) => {
     event.preventDefault()
-    let duplicate = persons.some(p => p.name.toLowerCase() === newName.trim().toLowerCase())
+    const duplicate = persons
+      .find(p => p.name.toLowerCase() === newName.toLowerCase().trim())
+
     if (duplicate) {
-      alert(`${newName} is already added to phonebook.`)
-      setNewName('')
-      setNewPhone('')
+
+      alert(`${duplicate.name} is already added to phonebook. Do you want to update the phone number?`)
+
+      const updated = { ...duplicate, phone: newPhone }
+
+      contactService
+        .updateContact(updated)
+        .then(response => {
+          setPersons(persons.map(p => p.id === response.id ? response : p))
+          setNewName('')
+          setNewPhone('')
+        })
     } else {
+
       const newPerson = {
         id: persons.length + 1,
         name: newName.trim(),
         phone: newPhone.trim()
       }
-      setPersons(persons.concat(newPerson))
-      setNewName('')
-      setNewPhone('')
+      contactService
+        .createContact(newPerson)
+        .then(response => {
+          setPersons(persons.concat(response))
+          setNewName('')
+          setNewPhone('')
+        })
     }
+  }
 
-  }
-  const nameChange = (event) => {
-    setNewName(event.target.value)
-  }
-  const phoneChange = (event) => {
-    setNewPhone(event.target.value)
-  }
-  const searchChange = (event) => {
-    setNewSearch(event.target.value)
-  }
+  const nameChange = (event) => setNewName(event.target.value)
+  const phoneChange = (event) => setNewPhone(event.target.value)
+  const searchChange = (event) => setNewSearch(event.target.value)
 
   const formData = {
     addPerson,
@@ -59,10 +69,6 @@ const App = () => {
     phoneChange,
     searchChange,
   }
-  const filterData = {
-    newSearch,
-    persons
-  }
 
   return (
     <div>
@@ -70,13 +76,13 @@ const App = () => {
 
       <span>Filter shown with </span>
       <input value={newSearch} onChange={searchChange} />
-      <Filter data={filterData} />
+      <Filter newSearch={newSearch} persons={persons} />
 
       <h2>Add a new person</h2>
       <PersonForm data={formData} />
 
-      <h2>Numbers</h2>
-      <Persons persons={persons} />
+      <h2>Contacts</h2>
+      <ContactList persons={persons} setPersons={setPersons} />
     </div>
   )
 }

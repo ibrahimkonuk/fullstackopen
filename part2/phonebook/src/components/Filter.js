@@ -1,9 +1,6 @@
 import React from 'react'
 
-const Filter = ({
-    data: { newSearch, persons }
-}) => {
-
+const Filter = ({ newSearch, persons }) => {
     if (newSearch) {
         return (
             <div>
@@ -14,7 +11,6 @@ const Filter = ({
         )
     }
     return ''
-
 }
 
 export default Filter
