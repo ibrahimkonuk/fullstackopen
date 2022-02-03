@@ -1,13 +1,14 @@
 import React from "react";
 import contacts from "../services/contacts";
 
-const Person = ({ person, persons, setPersons }) => {
+const Person = ({ person, persons, setPersons, setAlert }) => {
 
     const deleteContact = () => {
         if (window.confirm(`Delete ${person.name}?`)) {
             contacts
                 .deleteContact(person.id)
                 .then(response => {
+                    setAlert('Person deleted.', 'warning')
                     let updatedList = persons.filter(p => p.id !== person.id)
                     setPersons(updatedList)
                 })

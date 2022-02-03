@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react'
 import PersonForm from './components/PersonForm'
 import Filter from './components/Filter'
 import ContactList from './components/ContactList'
+import Notification from './components/Notification'
 import contactService from './services/contacts'
+import './index.css'
 
 const App = () => {
 
@@ -20,7 +22,14 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newPhone, setNewPhone] = useState('')
   const [newSearch, setNewSearch] = useState('')
+  const [notification, setNotification] = useState({})
 
+  const setAlert = (text, type) => {
+    setNotification({ text, type })
+    setTimeout(() => {
+      setNotification({ message: '', type: '' })
+    }, 3000);
+  }
   const addPerson = (event) => {
     event.preventDefault()
     const duplicate = persons
@@ -35,9 +44,13 @@ const App = () => {
       contactService
         .updateContact(updated)
         .then(response => {
+          setAlert('Contact successfuly updated.', 'success')
           setPersons(persons.map(p => p.id === response.id ? response : p))
           setNewName('')
           setNewPhone('')
+        })
+        .catch(error => {
+          setAlert(`${updated.name} has already been removed.`, 'error')
         })
     } else {
 
@@ -49,6 +62,7 @@ const App = () => {
       contactService
         .createContact(newPerson)
         .then(response => {
+          setAlert('New contact created.', 'success')
           setPersons(persons.concat(response))
           setNewName('')
           setNewPhone('')
@@ -72,6 +86,7 @@ const App = () => {
 
   return (
     <div>
+      <Notification message={notification} />
       <h2>Phonebook</h2>
 
       <span>Filter shown with </span>
@@ -82,7 +97,10 @@ const App = () => {
       <PersonForm data={formData} />
 
       <h2>Contacts</h2>
-      <ContactList persons={persons} setPersons={setPersons} />
+      <ContactList
+        persons={persons}
+        setPersons={setPersons}
+        setAlert={setAlert} />
     </div>
   )
 }
