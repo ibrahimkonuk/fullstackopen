@@ -1,0 +1,23 @@
+GET http://localhost:3001/api/phonebook HTTP/1.1
+
+###
+
+GET http://localhost:3001/api/phonebook/2 HTTP/1.1
+
+###
+
+GET http://localhost:3001/api/info HTTP/1.1
+
+###
+
+DELETE  http://localhost:3001/api/phonebook/1 HTTP/1.1
+
+###
+
+POST http://localhost:3001/api/phonebook HTTP/1.1
+content-type: application/json
+
+{
+    "name": "John Doe",
+    "number": "123-1231232"
+}
