@@ -1,0 +1,1 @@
+{"version":3,"file":"static/css/main.828facd9.css","mappings":"AAAA,cACE,aACF,CAEA,YACE,aACF,CAEA,cACE,aACF","sources":["index.css"],"sourcesContent":[".text-success {\n  color: #28a745;\n}\n\n.text-error {\n  color: #dc3545;\n}\n\n.text-warning {\n  color: #ffc107;\n}\n"],"names":[],"sourceRoot":""}

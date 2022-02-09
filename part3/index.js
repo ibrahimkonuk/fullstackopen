@@ -1,9 +1,12 @@
 const express = require('express')
 const morgan = require('morgan')
+const cors = require('cors')
 const app = express()
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use(cors())
+app.use(express.static('build'))
 
 // app.use(morgan('tiny'))
 morgan.token('body', (request, response) => JSON.stringify(request.body));
@@ -13,22 +16,22 @@ let phonebook = [
     {
         "id": 1,
         "name": "Arto Hellas",
-        "number": "040-123456"
+        "phone": "040-123456"
     },
     {
         "id": 2,
         "name": "Ada Lovelace",
-        "number": "39-44-5323523"
+        "phone": "39-44-5323523"
     },
     {
         "id": 3,
         "name": "Dan Abramov",
-        "number": "12-43-234345"
+        "phone": "12-43-234345"
     },
     {
         "id": 4,
         "name": "Mary Poppendieck",
-        "number": "39-23-6423122"
+        "phone": "39-23-6423122"
     }
 ]
 
@@ -68,7 +71,7 @@ app.post('/api/phonebook', (request, response) => {
     if (duplicate)
         response.status(409).json({ error: 'contact already exists' })
 
-    if (!request.body.name || !request.body.number)
+    if (!request.body.name || !request.body.phone)
         response.status(400).json({ error: 'empty parameter' }).end()
 
     const contact = {
@@ -85,6 +88,8 @@ app.get('/api/info', (request, response) => {
     response.send(`Phonebook has info for ${num} people. \n\n${now}`)
 })
 
-const PORT = 3001
-app.listen(PORT)
+const PORT = process.env.PORT || 3001
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
+})
 console.log(`Server running on port ${PORT}`)
