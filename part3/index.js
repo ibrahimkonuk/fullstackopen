@@ -2,6 +2,7 @@ const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
 const app = express()
+const Contact = require('./models/contact')
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
@@ -12,84 +13,60 @@ app.use(express.static('build'))
 morgan.token('body', (request, response) => JSON.stringify(request.body));
 app.use(morgan(':method :url :status :response-time ms - :body'));
 
-let phonebook = [
-    {
-        "id": 1,
-        "name": "Arto Hellas",
-        "phone": "040-123456"
-    },
-    {
-        "id": 2,
-        "name": "Ada Lovelace",
-        "phone": "39-44-5323523"
-    },
-    {
-        "id": 3,
-        "name": "Dan Abramov",
-        "phone": "12-43-234345"
-    },
-    {
-        "id": 4,
-        "name": "Mary Poppendieck",
-        "phone": "39-23-6423122"
-    }
-]
-
 app.get('/', (request, response) => {
     response.send('Phonebook app')
 })
 
 app.get('/api/phonebook', (request, response) => {
-    response.json(phonebook)
+    Contact.find({})
+        .then(notes => {
+            response.json(notes)
+        })
+        .catch(() => {
+            response.status(204).json({ message: "phonebook is empty" })
+        })
 })
 
 app.get('/api/phonebook/:id', (request, response) => {
-
-    let id = Number(request.params.id)
-    const contact = phonebook.filter(c => c.id === id)
-    if (contact.length) {
-        response.json(contact)
-    } else {
-        response.status(404).json({
-            error: 'contact not found'
-        }).end()
-    }
+    Contact.find({ _id: request.params.id })
+        .then((contact) => {
+            response.json(contact)
+        })
 })
 
 app.delete('/api/phonebook/:id', (request, response) => {
-    let id = Number(request.params.id)
-    phonebook = phonebook.filter(contact => contact.id !== id)
-    response.status(204).end()
+    Contact.findByIdAndRemove({ _id: request.params.id })
+        .then(() => {
+            response.status(200).json({ success: 'contact deleted' })
+        })
+        .catch(() => response.status(500).json({ error: "couldn't delete" }))
 })
 
 app.post('/api/phonebook', (request, response) => {
+    let body = request.body
 
-    let duplicate = phonebook
-        .some(c =>
-            c.name.toLowerCase() === request.body.name.trim().toLowerCase())
+    if (!body.name || !body.phone)
+        response.status(400).json({ error: 'empty parameter' })
 
-    if (duplicate)
-        response.status(409).json({ error: 'contact already exists' })
-
-    if (!request.body.name || !request.body.phone)
-        response.status(400).json({ error: 'empty parameter' }).end()
-
-    const contact = {
-        ...request.body,
-        'id': Math.floor(Math.random() * 1000)
-    }
-    phonebook.concat(contact)
-    response.json(contact)
+    Contact.exists({ phone: body.phone })
+        .then((contact) => {
+            if (contact) {
+                response.status(409).json({ error: 'phone number already exists' })
+            } else {
+                Contact.create(body)
+                response.status(200).json(body);
+            }
+        })
 })
 
 app.get('/api/info', (request, response) => {
-    let num = phonebook.length
     let now = new Date()
-    response.send(`Phonebook has info for ${num} people. \n\n${now}`)
+    Contact.countDocuments()
+        .then(numOfContacts => response.send(`Phonebook has info for ${numOfContacts} people. \n\n${now}`))
+        .catch(() => response.status(500).json({ error: "couldn't get info" }))
 })
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
-console.log(`Server running on port ${PORT}`)
