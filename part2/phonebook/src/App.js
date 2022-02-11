@@ -16,6 +16,7 @@ const App = () => {
         setNewName('')
         setNewPhone('')
       })
+      .catch((error) => setAlert(error.response.data, 'error'))
   }, [])
 
   const [persons, setPersons] = useState([])
@@ -33,7 +34,7 @@ const App = () => {
   const addPerson = (event) => {
     event.preventDefault()
     const duplicate = persons
-      .find(p => p.name.toLowerCase() === newName.toLowerCase().trim())
+      .find(p => p.name.toLowerCase() === newName.trim().toLowerCase())
 
     if (duplicate) {
 
@@ -50,7 +51,7 @@ const App = () => {
           setNewPhone('')
         })
         .catch(error => {
-          setAlert(`${updated.name} has already been removed.`, 'error')
+          setAlert(error.response.data, 'error')
         })
     } else {
 
@@ -66,6 +67,19 @@ const App = () => {
           setPersons(persons.concat(response))
           setNewName('')
           setNewPhone('')
+        })
+        .catch((error) => {
+          if (newPerson.name.length < 8) {
+            setAlert("Name must be at least 8 character long", "error")
+          }
+          else if (!newPerson.phone.match(/^\d{2,3}-\d{6,}/)) {
+            setAlert("Phone format is invalid", "error")
+          }
+          else {
+            setAlert(error)
+          }
+
+
         })
     }
   }

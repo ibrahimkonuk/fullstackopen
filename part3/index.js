@@ -61,13 +61,14 @@ app.post('/api/phonebook', (request, response, next) => {
     if (!body.name || !body.phone)
         response.status(400).send({ error: 'empty parameter' })
 
-    Contact.exists({ phone: body.phone })
+    Contact.exists({ name: body.name })
         .then((contact) => {
             if (contact) {
-                response.status(409).send({ error: 'phone number already exists' })
+                response.status(409).json({ error: 'contact already exists' })
             } else {
                 Contact.create(body)
-                response.status(200).json(body);
+                    .then(contact => response.json(contact))
+                    .catch((error) => response.status(500).json(error.message))
             }
         })
         .catch((error) => next(error))
@@ -91,6 +92,8 @@ const errorHandler = (error, request, response, next) => {
 
     if (error.name === 'CastError') {
         return response.status(400).send({ error: 'malformatted id' })
+    } else if (error.name === 'ValidationError') {
+        return response.status(400).json({ error: error.message })
     }
 
     next(error)
