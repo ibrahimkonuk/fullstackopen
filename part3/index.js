@@ -10,8 +10,8 @@ app.use(cors())
 app.use(express.static('build'))
 
 // app.use(morgan('tiny'))
-morgan.token('body', (request, response) => JSON.stringify(request.body));
-app.use(morgan(':method :url :status :response-time ms - :body'));
+morgan.token('body', (request,) => JSON.stringify(request.body))
+app.use(morgan(':method :url :status :response-time ms - :body'))
 
 app.get('/', (request, response) => {
     response.send('Phonebook app')
