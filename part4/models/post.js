@@ -21,8 +21,15 @@ const postSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Author name required'],
     },
-    url: String,
-    likes: Number
+    url: {
+        type: String,
+        required: [true, 'URL is required'],
+    },
+    likes: {
+        type: Number,
+        required: false,
+        default: 0,
+    },
 })
 
 postSchema.set('toJSON', {

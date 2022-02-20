@@ -3,6 +3,7 @@ const cors = require('cors')
 const app = express()
 const router = require('./controllers/blogs')
 const middleware = require('./utils/middleware')
+require('express-async-errors')
 
 app.use(cors())
 app.use(express.json())

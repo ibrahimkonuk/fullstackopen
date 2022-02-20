@@ -1,47 +1,33 @@
 const blogRouter = require('express').Router()
 const Post = require('../models/post')
 
-blogRouter.get('/', (request, response, next) => {
-    Post
-        .find({})
-        .then((posts) => {
-            posts
-                ? response.json(posts)
-                : response.status(404)
-        })
-        .catch(error => next(error))
+blogRouter.get('/', async (request, response) => {
+    const posts = await Post.find({})
+    posts
+        ? response.json(posts)
+        : response.status(404)
 })
 
-blogRouter.get('/:id', (request, response, next) => {
-    Post
-        .find({ _id: request.params.id })
-        .then(post => {
-            post
-                ? response.json(post)
-                : response.status(404)
-        })
-        .catch(error => next(error))
+blogRouter.get('/:id', async (request, response) => {
+    const post = await Post.find({ _id: request.params.id })
+    post
+        ? response.json(post)
+        : response.status(404)
 })
 
-blogRouter.post('/', (request, response, next) => {
+blogRouter.post('/', async (request, response) => {
     let body = request.body
-
-    Post
-        .create(body)
-        .then(post => response.json(post))
-        .catch(error => next(error))
+    const post = await Post.create(body)
+    response.json(post)
 })
 
-blogRouter.put('/:id', (request, response, next) => {
-    Post
+blogRouter.put('/:id', async (request, response) => {
+    const updatedPost = await Post
         .findByIdAndUpdate(request.params.id, request.body, { new: true })
-        .then(updatedPost => {
-            updatedPost
-                ? response.json(updatedPost)
-                : response.status(404)
-        })
-        .catch(error => next(error))
 
+    updatedPost
+        ? response.json(updatedPost)
+        : response.status(404)
 })
 
 blogRouter.delete('/:id', (request, response, next) => {
