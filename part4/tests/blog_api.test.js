@@ -60,6 +60,23 @@ describe('should test api', () => {
 
     })
 
+    test('should delete a post', async () => {
+        const postsAtStart = await helper.postsInDb()
+        const postToDelete = postsAtStart[0]
+
+        await api.delete(`/api/blog/${postToDelete.id}`).expect(200)
+
+        const postsAtEnd = await helper.postsInDb()
+
+        expect(postsAtEnd).toHaveLength(
+            helper.initialPosts.length - 1
+        )
+
+        const titles = postsAtEnd.map(post => post.title)
+
+        expect(titles).not.toContain(postToDelete.title)
+    })
+
     test('should set likes property to 0 if left empty', async () => {
         const newPost = {
             "title": "New title",
@@ -84,6 +101,20 @@ describe('should test api', () => {
 
         const postsInDb = await helper.postsInDb()
         expect(postsInDb).toHaveLength(helper.initialPosts.length)
+    })
+
+    test('should update post', async () => {
+        const posts = await helper.postsInDb()
+        const firstPost = posts[0]
+        const beforeLikes = firstPost.likes
+        firstPost.likes += 1
+
+        await api.put(`/api/blog/${firstPost.id}`).send(firstPost).expect(200)
+
+        const updatedPosts = await helper.postsInDb()
+        const updatedPost = updatedPosts[0]
+
+        expect(updatedPost.likes).toBe(beforeLikes + 1)
     })
 
 })
