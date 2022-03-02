@@ -30,6 +30,10 @@ const postSchema = new mongoose.Schema({
         required: false,
         default: 0,
     },
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }
 })
 
 postSchema.set('toJSON', {
@@ -40,4 +44,6 @@ postSchema.set('toJSON', {
     }
 })
 
-module.exports = mongoose.model('Post', postSchema)
+const Post = mongoose.model('Post', postSchema)
+
+module.exports = Post

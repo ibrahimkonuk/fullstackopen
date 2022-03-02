@@ -2,6 +2,10 @@ GET http://localhost:3001/api/blog HTTP/1.1
 
 ###
 
+GET http://localhost:3001/api/users HTTP/1.1
+
+###
+
 GET http://localhost:3001/api/blog/1 HTTP/1.1
 
 ###
@@ -16,6 +20,17 @@ content-type: application/json
 {
     "title": "New post",
     "author": "Author"
+}
+
+###
+
+POST http://localhost:3001/api/users HTTP/1.1
+content-type: application/json
+
+{
+    "username": "newUser",
+    "name": "New User",
+    "password": "Password"
 }
 
 ###
