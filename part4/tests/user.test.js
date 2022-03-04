@@ -51,4 +51,21 @@ describe('when there is initially one user in db', () => {
         expect(usersAtStart).toEqual(currentUsers)
 
     });
+
+    test('should throw name validation error ', async () => {
+        const usersAtStart = await testHelper.usersInDb()
+
+        const user = new User({
+            username: 'ab',
+            name: 'ab',
+            password: 'password'
+        })
+
+        await expect(user.validate()).rejects.toThrow()
+
+        const currentUsers = await testHelper.usersInDb()
+        expect(usersAtStart).toEqual(currentUsers)
+
+    });
+
 });

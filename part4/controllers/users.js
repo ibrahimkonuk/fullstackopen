@@ -10,6 +10,10 @@ usersRouter.get('/', async (request, response) => {
 usersRouter.post('/', async (request, response) => {
     const { username, name, password } = request.body
 
+    if (username.length < 3 || password.length < 3) {
+        return response.status(400)
+    }
+
     const existingUser = await User.findOne({ username })
     if (existingUser) {
         return response.status(400).json({

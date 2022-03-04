@@ -3,14 +3,36 @@ const supertest = require('supertest')
 const app = require('../app')
 const api = supertest(app)
 const helper = require('./test_helper')
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+const config = require('../utils/config')
 
 const Post = require('../models/post')
+const User = require('../models/user')
 
 beforeEach(async () => {
     await Post.deleteMany({})
-    let postObject = new Post(helper.initialPosts[0])
-    await postObject.save()
+    await User.deleteMany({})
 
+    const password = await bcrypt.hash('password', 10)
+    const user = new User({
+        username: 'test',
+        name: 'test',
+        password,
+    })
+    const savedUser = await user.save()
+
+    const userForToken = {
+        username: savedUser.username,
+        id: savedUser._id.toString(),
+    }
+    token = jwt.sign(userForToken, config.SECRET)
+
+    for (let post of helper.initialPosts) {
+        post.user = savedUser._id.toString()
+        let postObject = new Post(post)
+        await postObject.save()
+    }
 })
 
 describe('should test api', () => {
@@ -40,7 +62,7 @@ describe('should test api', () => {
             "likes": 10
         }
 
-        await api.post('/api/blog').send(newPost).expect(200).expect('Content-Type', /application\/json/)
+        await api.post('/api/blog').set('Authorization', `bearer ${token}`).send(newPost).expect(200).expect('Content-Type', /application\/json/)
 
         const response = await api.get('/api/blog')
         const titles = response.body.map(post => post.title)
@@ -61,20 +83,21 @@ describe('should test api', () => {
     })
 
     test('should delete a post', async () => {
+        const postToDelete = new Post({ ...helper.initialPosts[0] })
+        await postToDelete.save()
         const postsAtStart = await helper.postsInDb()
-        const postToDelete = postsAtStart[0]
 
-        await api.delete(`/api/blog/${postToDelete.id}`).expect(200)
+        await api.delete(`/api/blog/${postToDelete.id}`).set('Authorization', `bearer ${token}`).expect(200)
 
         const postsAtEnd = await helper.postsInDb()
 
         expect(postsAtEnd).toHaveLength(
-            helper.initialPosts.length - 1
+            postsAtStart.length - 1
         )
 
         const titles = postsAtEnd.map(post => post.title)
 
-        expect(titles).not.toContain(postToDelete.title)
+        expect(titles).not.toContain(...postToDelete.title)
     })
 
     test('should set likes property to 0 if left empty', async () => {
@@ -84,7 +107,7 @@ describe('should test api', () => {
             "url": "https://a.com"
         }
 
-        await api.post('/api/blog').send(newPost).expect(200)
+        await api.post('/api/blog').set('Authorization', `bearer ${token}`).send(newPost).expect(200)
 
         const response = await api.get('/api/blog')
         expect(response.body).toHaveLength(helper.initialPosts.length + 1)
@@ -109,13 +132,28 @@ describe('should test api', () => {
         const beforeLikes = firstPost.likes
         firstPost.likes += 1
 
-        await api.put(`/api/blog/${firstPost.id}`).send(firstPost).expect(200)
+        await api.put(`/api/blog/${firstPost.id}`).send(firstPost).set('Authorization', `bearer ${token}`).expect(200)
 
         const updatedPosts = await helper.postsInDb()
         const updatedPost = updatedPosts[0]
 
         expect(updatedPost.likes).toBe(beforeLikes + 1)
     })
+
+    test('should reject unauthorised post creation', async () => {
+        const newPost = {
+            "title": "New post",
+            "author": "New author",
+            "url": "https://newurl.com",
+            "likes": 10
+        }
+
+        await api.post('/api/blog').send(newPost).expect(401).expect('Content-Type', /application\/json/)
+
+        const response = await api.get('/api/blog')
+
+        expect(response.body).toHaveLength(helper.initialPosts.length)
+    });
 
 })
 
