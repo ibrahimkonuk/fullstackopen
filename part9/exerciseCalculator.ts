@@ -9,7 +9,7 @@ interface Result {
 }
 
 type Rating = 1 | 2 | 3;
-const scale: number = 3;
+const scale = 3;
 
 const calculateExercise = (data: Array<number>, target: number): Result => {
   const periodLength: number = data.length;
@@ -18,7 +18,7 @@ const calculateExercise = (data: Array<number>, target: number): Result => {
     data.reduce((prev, curr) => prev + curr, 0) / periodLength;
   const success: boolean = average === target ? true : false;
   let rating: Rating = 1;
-  let ratingDescription: string = "";
+  let ratingDescription = "";
 
   if (average <= target / scale) {
     rating = 1;
@@ -42,13 +42,4 @@ const calculateExercise = (data: Array<number>, target: number): Result => {
   };
 };
 
-const data: Array<number> = process.argv[2].split(" ").map(Number);
-const target: number = Number(process.argv[3]);
-
-try {
-  console.log(calculateExercise(data, target));
-} catch (error: unknown) {
-  if (error instanceof Error) {
-    console.log(error);
-  }
-}
+export default calculateExercise;
