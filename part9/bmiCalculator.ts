@@ -5,8 +5,6 @@ type Units = {
 
 const calculateBmi = (units: Units): string => {
   const { height, weight } = units;
-  if (isNaN(height) || isNaN(weight))
-    throw new Error("Both values must be number");
 
   const bmi: number = weight / Math.pow(height / 100, 2);
 
@@ -22,9 +20,11 @@ const units: Units = {
 };
 
 try {
-  console.log(calculateBmi(units));
+  calculateBmi(units);
 } catch (error: unknown) {
   if (error instanceof Error) {
     console.log(error);
   }
 }
+
+export default calculateBmi;
